@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics,permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer, RefTokenSerializer
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from intern_app.utils import refresh_token
@@ -89,4 +89,19 @@ class TokenRefresh(generics.CreateAPIView):
             }, status=status.HTTP_201_CREATED)
             
             
-             
+class LogoutView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh_token')
+        if not refresh_token:
+            return Response({'error':'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            token_obj = RefToken.objects.get(ref_token = refresh_token)
+        except RefToken.DoesNotExist:
+            return Response({'error':'Refresh token does not exist'}, status=status.HTTP_404_NOT_FOUND)   
+        
+        token_obj.delete()
+
+        return Response({'success': 'User logged out.'}, status=status.HTTP_200_OK)

@@ -11,7 +11,7 @@ urlpatterns = [
     path('api/register/', RegisterView.as_view(), name ='register-api'),
     path('api/login/', LoginView.as_view(), name = 'login-api'),
     path('api/refresh/', TokenRefresh.as_view(), name = 'refresh-api'),
-
+    path('api/logout/', LogoutView.as_view(), name='logout-api'),
 
     
 ]
