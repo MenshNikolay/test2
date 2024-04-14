@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics,permissions
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -89,9 +89,10 @@ class TokenRefresh(generics.CreateAPIView):
             }, status=status.HTTP_201_CREATED)
             
             
-class LogoutView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
-
+class LogoutView(APIView):
+    authentication_classes = [] 
+    permission_classes = []
+    
     def post(self, request):
         refresh_token = request.data.get('refresh_token')
         if not refresh_token:
