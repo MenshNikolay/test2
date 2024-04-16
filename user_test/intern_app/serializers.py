@@ -1,11 +1,21 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.validators import ASCIIUsernameValidator
 from django.utils.crypto import get_random_string
 
 
 from intern_app.models import RefToken
+
+
+class CustomUsernameValidator(ASCIIUsernameValidator):
+    regex = r'^[\w.@+ -]+\Z'
+    message = _(
+        'Enter a valid username. This value may contain only letters, numbers, '
+        'and @/./+/-/_ characters.'
+    )
+    flags = 0
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -29,7 +39,17 @@ class UserSerializer(serializers.ModelSerializer):
         
         return self.Meta.model.objects.create_user(username=username, email=email, password=password)
     
+
+class RetriveSerializer(serializers.ModelSerializer):
+     username = serializers.CharField(validators=[CustomUsernameValidator()])
+
+     class Meta:
+        model = User
+        fields = ["id", "username", "email"]  
+    
 class RefTokenSerializer(serializers.ModelSerializer):
        class Meta:
         model = RefToken
         fields = ['ref_token']
+
+

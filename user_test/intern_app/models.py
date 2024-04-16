@@ -1,10 +1,11 @@
 from django.utils import timezone
 from django.db import models
-from django.contrib.auth.models import User, Group, Permission
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
+
 
 from intern_app.utils import define_exp_date
 import uuid
+
 
 class RefToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,verbose_name = 'Пользователь')
@@ -16,7 +17,9 @@ class RefToken(models.Model):
 
     #def is_exp(self):
         #return self.exp_date < timezone.now()
-    
+
+
+
 
 
 
