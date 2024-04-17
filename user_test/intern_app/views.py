@@ -1,14 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, generics,permissions
+from rest_framework import status, generics
 from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer, RefTokenSerializer,RetriveSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from intern_app.utils import refresh_token
+from django.utils import timezone
 
+from intern_app.utils import refresh_token
 from intern_app.models import RefToken
 import uuid
 import jwt
@@ -77,7 +78,8 @@ class TokenRefresh(generics.CreateAPIView):
             except RefToken.DoesNotExist:
                 return Response({'error': 'Token does not exist'}, status=status.HTTP_404_NOT_FOUND)
             
-                
+            if  obj.exp_date < timezone.now().date():
+                return Response({'error':'Token has expired'}, status=status.HTTP_400_BAD_REQUEST)  
 
             new_token = uuid.uuid4()
             
@@ -104,7 +106,10 @@ class LogoutView(APIView):
         try:
             token_obj = RefToken.objects.get(ref_token = refresh_token)
         except RefToken.DoesNotExist:
-            return Response({'error':'Refresh token does not exist'}, status=status.HTTP_404_NOT_FOUND)   
+            return Response({'error':'Refresh token does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        if  token_obj.exp_date < timezone.now().date():
+                return Response({'error':'Token has expired'}, status=status.HTTP_400_BAD_REQUEST)   
         
         token_obj.delete()
 
@@ -124,9 +129,14 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     
     #need costamization for words with space
     def put(self, request, *args, **kwargs):
-        
-
-        serializer = self.serializer_class(request.user, data=request.data)
+        user = request.user
+        if user is None:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = request.data
+        if 'username' in data:
+            
+            data['username'] = data['username']
+        serializer = self.serializer_class(user, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
