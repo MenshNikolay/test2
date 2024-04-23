@@ -7,7 +7,8 @@ meta:
 build:
   requirementsPath: requirements.txt
 run:
-  scriptName: 
   persistenceMount: /data
   containerPort: 80
-  command: cd user_test && gunicorn user_test.wsgi:application --bind 0.0.0.0:80
+  command: cd user_test && python -m gunicorn user_test.wsgi:application --env DJANGO_SETTINGS_MODULE=user_test.settings --bind 0.0.0.0:80
+
+  
