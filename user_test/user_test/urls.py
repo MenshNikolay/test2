@@ -6,6 +6,7 @@ from .yasg import urlpatterns as doc_url
 
 
 urlpatterns = [
+    path('', views.index, name='index'),
     path('admin/', admin.site.urls),
     path('intern_app/', include('intern_app.urls')),
 ]
